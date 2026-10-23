@@ -19,7 +19,9 @@ import {
   FastForward,
   UserCheck,
   PhoneCall,
+  Navigation,
 } from "lucide-react"
+import { BloodBanksMap } from "./BloodBanksMap"
 
 interface SearchBloodResultsProps {
   request: BloodRequest
@@ -37,6 +39,7 @@ export function SearchBloodResults({
   onDone,
 }: SearchBloodResultsProps) {
   const [activeTab, setActiveTab] = React.useState<"blood-banks" | "donors">("blood-banks")
+  const [selectedBankId, setSelectedBankId] = React.useState<string | null>(null)
 
   // ==========================================
   // SIMULATION STATE (1-minute timer & donor pop)
@@ -504,63 +507,110 @@ export function SearchBloodResults({
                   Hospital Blood Banks Near {request.hospital.city}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Direct official contact numbers for 24/7 blood screening & cross-matching desks.
+                  Interactive radar map with direct official contact numbers for 24/7 blood screening & cross-matching desks.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {nearbyBloodBanks.slice(0, 6).map((bb) => (
-                <Card
-                  key={bb.id}
-                  className="border-border bg-card rounded-2xl shadow-xs hover:shadow-md transition-shadow"
-                >
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            {bb.city}
-                          </span>
-                          {bb.distanceKm !== undefined && (
-                            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full border border-border">
-                              {formatDistance(bb.distanceKm)}
+            {/* Interactive Leaflet Map Component */}
+            <BloodBanksMap
+              bloodBanks={nearbyBloodBanks.slice(0, 10)}
+              userCoords={userCoords || request.hospital.coordinates || null}
+              hospitalName={request.hospital.name}
+              selectedBankId={selectedBankId}
+              onSelectBank={(bank) => setSelectedBankId(bank.id)}
+            />
+
+            {/* Blood Banks Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              {nearbyBloodBanks.slice(0, 8).map((bb) => {
+                const isSelected = selectedBankId === bb.id
+                return (
+                  <Card
+                    key={bb.id}
+                    onClick={() => setSelectedBankId(bb.id)}
+                    className={`rounded-2xl transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-2 border-primary ring-2 ring-primary/20 shadow-md bg-primary/[0.02] scale-[1.01]"
+                        : "border-border bg-card shadow-xs hover:border-primary/50 hover:shadow-sm"
+                    }`}
+                  >
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              {bb.city}
                             </span>
-                          )}
-                        </div>
-                        <h4 className="text-sm sm:text-base font-bold text-foreground pt-1">
-                          {bb.name}
-                        </h4>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="size-3 text-primary shrink-0" />
-                          <span className="truncate">{bb.area}</span>
+                            {bb.distanceKm !== undefined && (
+                              <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full border border-border">
+                                {formatDistance(bb.distanceKm)}
+                              </span>
+                            )}
+                            {isSelected && (
+                              <span className="text-[10px] font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full">
+                                Selected on Map
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="text-sm sm:text-base font-bold text-foreground pt-1">
+                            {bb.name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="size-3 text-primary shrink-0" />
+                            <span className="truncate">{bb.area}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-1 text-xs bg-secondary/80 p-3 rounded-xl border border-border/50">
-                      <div className="flex items-center gap-2 text-foreground font-medium">
-                        <Clock className="size-3.5 text-muted-foreground shrink-0" />
-                        <span>{bb.hours}</span>
+                      <div className="space-y-1 text-xs bg-secondary/80 p-3 rounded-xl border border-border/50">
+                        <div className="flex items-center gap-2 text-foreground font-medium">
+                          <Clock className="size-3.5 text-muted-foreground shrink-0" />
+                          <span>{bb.hours}</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground pl-5.5">
+                          Services: {bb.services.join(", ")}
+                        </p>
                       </div>
-                      <p className="text-[11px] text-muted-foreground pl-5.5">
-                        Services: {bb.services.join(", ")}
-                      </p>
-                    </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                      <span className="text-[11px] text-muted-foreground">Official Desk:</span>
-                      <a
-                        href={`tel:${bb.phone}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-primary hover:underline"
-                      >
-                        <Phone className="size-3" />
-                        {bb.phone}
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="flex items-center justify-between pt-1 border-t border-border/60">
+                        <a
+                          href={`tel:${bb.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-primary hover:underline"
+                        >
+                          <Phone className="size-3" />
+                          {bb.phone}
+                        </a>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedBankId(bb.id)
+                            }}
+                            className="text-[11px] font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1"
+                          >
+                            <MapPin className="size-3 text-primary" />
+                            Locate
+                          </button>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${bb.coordinates.lat},${bb.coordinates.lng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                          >
+                            <Navigation className="size-3" />
+                            Directions
+                          </a>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           </div>
         )}
