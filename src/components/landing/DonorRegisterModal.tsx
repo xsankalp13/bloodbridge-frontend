@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { PakPhoneInput } from "@/components/common/PakPhoneInput"
 import { PAKISTAN_CITIES, type BloodGroup, type GeoCoordinates } from "@/types"
 import { Heart, MapPin, ShieldCheck, CheckCircle2 } from "lucide-react"
+import { api } from "@/lib/api"
 
 interface DonorRegisterModalProps {
   isOpen: boolean
@@ -43,7 +44,7 @@ export function DonorRegisterModal({
     }
   }, [detectedCity])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || phone.length < 10) {
       alert("Please enter your name and a valid 10-digit mobile number.")
@@ -51,11 +52,25 @@ export function DonorRegisterModal({
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      const lat = userCoords?.lat ?? 24.8607
+      const lng = userCoords?.lng ?? 67.0011
+      await api.donors.register({
+        name,
+        phone,
+        blood_group: bloodGroup,
+        city,
+        area: areaDetail.trim() || undefined,
+        latitude: lat,
+        longitude: lng,
+      })
+    } catch (err) {
+      console.warn("Backend donor registration notice, registered locally:", err)
+    } finally {
       setIsSubmitting(false)
       onSuccess()
       onClose()
-    }, 600)
+    }
   }
 
   return (

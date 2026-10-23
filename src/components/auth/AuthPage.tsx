@@ -13,7 +13,9 @@ import {
   ShieldCheck,
   CheckCircle2,
   Sparkles,
+  AlertCircle,
 } from "lucide-react"
+import { api } from "@/lib/api"
 
 interface AuthPageProps {
   initialMode?: "signin" | "signup"
@@ -30,6 +32,7 @@ export function AuthPage({
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   // Sign In: Phone + Password
   const [signInPhone, setSignInPhone] = React.useState("")
@@ -40,38 +43,70 @@ export function AuthPage({
   const [signUpPhone, setSignUpPhone] = React.useState("")
   const [signUpPassword, setSignUpPassword] = React.useState("")
 
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (signInPhone.length < 10 || !signInPassword.trim()) {
-      alert("Please enter a valid 10-digit mobile number and your password.")
+    setErrorMessage(null)
+    setSuccessMessage(null)
+
+    const cleanPhone = signInPhone.replace(/\D/g, "")
+    if (cleanPhone.length < 10 || !signInPassword.trim()) {
+      setErrorMessage("Please enter a valid 10-digit mobile number and your password.")
       return
     }
 
     setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      setSuccessMessage("Welcome back! Signed in to BloodBridge.")
+    try {
+      const res = await api.auth.login({
+        phone: cleanPhone,
+        password: signInPassword,
+      })
+      setSuccessMessage(`Welcome back, ${res.user.name}! Signed in to BloodBridge.`)
       setTimeout(() => {
-        onAuthSuccess?.({ name: "Requester", phone: signInPhone })
-      }, 700)
-    }, 600)
+        onAuthSuccess?.({ name: res.user.name, phone: res.user.phone })
+      }, 500)
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "Invalid mobile number or password. If you don't have an account, please switch to Sign Up."
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!signUpName.trim() || signUpPhone.length < 10 || !signUpPassword.trim()) {
-      alert("Please provide your name, 10-digit mobile number, and password.")
+    setErrorMessage(null)
+    setSuccessMessage(null)
+
+    const cleanPhone = signUpPhone.replace(/\D/g, "")
+    if (!signUpName.trim() || cleanPhone.length < 10) {
+      setErrorMessage("Please enter your name and a valid 10-digit mobile number.")
+      return
+    }
+
+    if (signUpPassword.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.")
       return
     }
 
     setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      setSuccessMessage(`Account created for ${signUpName}! You can now coordinate requests.`)
+    try {
+      const res = await api.auth.signup({
+        name: signUpName.trim(),
+        phone: cleanPhone,
+        password: signUpPassword,
+      })
+      setSuccessMessage(`Account created for ${res.user.name}! You can now coordinate requests.`)
       setTimeout(() => {
-        onAuthSuccess?.({ name: signUpName, phone: signUpPhone })
-      }, 800)
-    }, 600)
+        onAuthSuccess?.({ name: res.user.name, phone: res.user.phone })
+      }, 600)
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || "Account creation failed. This phone number might already be registered."
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -121,6 +156,7 @@ export function AuthPage({
             onClick={() => {
               setMode("signin")
               setSuccessMessage(null)
+              setErrorMessage(null)
             }}
             className={`relative z-10 flex-1 py-2 text-xs font-bold transition-colors duration-200 text-center select-none ${
               mode === "signin" ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -134,6 +170,7 @@ export function AuthPage({
             onClick={() => {
               setMode("signup")
               setSuccessMessage(null)
+              setErrorMessage(null)
             }}
             className={`relative z-10 flex-1 py-2 text-xs font-bold transition-colors duration-200 text-center select-none ${
               mode === "signup" ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -148,6 +185,14 @@ export function AuthPage({
           <div className="rounded-xl border border-success/30 bg-success/10 text-success p-3 text-xs font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
             <CheckCircle2 className="size-4 shrink-0" />
             <span>{successMessage}</span>
+          </div>
+        )}
+
+        {/* Error Alert Banner */}
+        {errorMessage && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 text-destructive p-3 text-xs font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <AlertCircle className="size-4 shrink-0" />
+            <span>{errorMessage}</span>
           </div>
         )}
 
@@ -301,6 +346,7 @@ export function AuthPage({
                     value={signUpPassword}
                     onChange={(e) => setSignUpPassword(e.target.value)}
                     className="h-11 pl-9 pr-10 rounded-xl text-sm"
+                    minLength={6}
                     required
                   />
                   <Lock className="size-4 text-muted-foreground absolute left-3 top-3.5" />

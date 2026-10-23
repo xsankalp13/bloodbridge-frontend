@@ -22,6 +22,7 @@ import {
   Navigation,
 } from "lucide-react"
 import { BloodBanksMap } from "./BloodBanksMap"
+import { api } from "@/lib/api"
 
 interface SearchBloodResultsProps {
   request: BloodRequest
@@ -126,12 +127,21 @@ export function SearchBloodResults({
     setIsSearching(false)
     setSecondsRemaining(0)
     setMatchedDonor(donorTemplate)
+
+    // Notify backend
+    api.whatsapp
+      .simulateAccept({
+        request_id: request.id,
+        blood_group: request.bloodGroup,
+        location: `${request.hospital.area || userCity}`,
+      })
+      .catch((err) => console.warn("Simulate accept notice:", err))
   }
 
   // ==========================================
-  // NEAREST BLOOD BANKS CALCULATION
+  // NEAREST BLOOD BANKS CALCULATION & FETCH
   // ==========================================
-  const nearbyBloodBanks: BloodBankFacility[] = React.useMemo(() => {
+  const [nearbyBloodBanks, setNearbyBloodBanks] = React.useState<BloodBankFacility[]>(() => {
     const list = PAKISTAN_BLOOD_BANKS.map((bb) => {
       let distanceKm: number | undefined
       if (userCoords) {
@@ -146,9 +156,37 @@ export function SearchBloodResults({
       }
       return { ...bb, distanceKm }
     })
-
-    // Sort by distance (closest first)
     return list.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999))
+  })
+
+  // Fetch verified facilities from live backend Supabase
+  React.useEffect(() => {
+    api.bloodBanks
+      .getNearest({
+        lat: userCoords?.lat,
+        lng: userCoords?.lng,
+        city: userCity,
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          const formatted: BloodBankFacility[] = data.map((d) => ({
+            id: d.id,
+            name: d.name,
+            city: d.city,
+            area: d.area,
+            province: d.province,
+            phone: d.phone,
+            hours: d.hours,
+            coordinates: { lat: d.latitude, lng: d.longitude },
+            services: d.services,
+            distanceKm: d.distance_km,
+          }))
+          setNearbyBloodBanks(formatted)
+        }
+      })
+      .catch((err) => {
+        console.warn("Using fallback local blood banks:", err)
+      })
   }, [userCoords, userCity])
 
   const formatTimer = (totalSeconds: number) => {

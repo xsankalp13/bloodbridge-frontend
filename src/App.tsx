@@ -19,8 +19,10 @@ import {
   getNearestPakistaniCity,
   populateAndSortRequestsByLocation,
 } from "@/lib/geoUtils"
+import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Plus, Heart, CheckCircle2 } from "lucide-react"
+import { BloodBridgeChatbot } from "@/components/chat/BloodBridgeChatbot"
 
 export default function App() {
   const [currentView, setCurrentView] = React.useState<
@@ -53,6 +55,51 @@ export default function App() {
   const [requests, setRequests] = React.useState<BloodRequest[]>(() => {
     return constantCases as unknown as BloodRequest[]
   })
+
+  // Fetch live requests from Supabase Backend API
+  React.useEffect(() => {
+    api.requests
+      .list({ limit: 50 })
+      .then((data) => {
+        if (data && data.length > 0) {
+          const liveCases: BloodRequest[] = data.map((d) => ({
+            id: d.id,
+            referenceCode: d.reference_code,
+            bloodGroup: d.blood_group,
+            unitsNeeded: d.units_needed,
+            hospital: {
+              name: d.hospital.name,
+              area: d.hospital.area || "",
+              city: d.hospital.city,
+              province: "Pakistan",
+              coordinates: {
+                lat: d.hospital.latitude,
+                lng: d.hospital.longitude,
+              },
+            },
+            urgency: (d.urgency as any) === "emergency" ? "critical" : d.urgency,
+            requiredBy: (d.urgency as any) === "emergency" || d.urgency === "critical" ? "Within 2 Hours" : "Today",
+            timeRemaining: (d.urgency as any) === "emergency" || d.urgency === "critical" ? "2h remaining" : "6h remaining",
+            condition: d.notes || `${d.blood_component} needed immediately`,
+            contactPerson: d.contact_person,
+            contactPhone: d.contact_phone,
+            verified: true,
+            notes: d.notes,
+          }))
+
+          // Merge live Supabase cases on top of existing cases
+          setRequests((prev) => {
+            const existingIds = new Set(liveCases.map((c) => c.id))
+            const remainingLocal = prev.filter((p) => !existingIds.has(p.id))
+            const combined = [...liveCases, ...remainingLocal]
+            return populateAndSortRequestsByLocation(combined, userCoords)
+          })
+        }
+      })
+      .catch((err) => {
+        console.warn("Backend request fetch notice, using local cases:", err)
+      })
+  }, [userCoords])
 
   // Function to process coordinates
   const handleLocationSuccess = React.useCallback(
@@ -176,61 +223,70 @@ export default function App() {
   // 1. Render Interactive Search for Blood Wizard (Step-by-step form)
   if (currentView === "search-blood") {
     return (
-      <SearchBloodWizard
-        userCoords={userCoords}
-        userDetectedCity={userDetectedCity}
-        isLocationLive={isLocationLive}
-        onRequestLocation={fetchGeolocation}
-        user={user}
-        onBack={() => {
-          if (user) {
-            setCurrentView("dashboard")
-          } else {
-            setCurrentView("landing")
-          }
-        }}
-        onSubmitRequest={(newReq) => {
-          handleAddNewRequest(newReq)
-          setActiveSearchCase(newReq)
-          setCurrentView("search-results")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
-      />
+      <>
+        <SearchBloodWizard
+          userCoords={userCoords}
+          userDetectedCity={userDetectedCity}
+          isLocationLive={isLocationLive}
+          onRequestLocation={fetchGeolocation}
+          user={user}
+          onBack={() => {
+            if (user) {
+              setCurrentView("dashboard")
+            } else {
+              setCurrentView("landing")
+            }
+          }}
+          onSubmitRequest={(newReq) => {
+            handleAddNewRequest(newReq)
+            setActiveSearchCase(newReq)
+            setCurrentView("search-results")
+            window.scrollTo({ top: 0, behavior: "smooth" })
+          }}
+        />
+        <BloodBridgeChatbot />
+      </>
     )
   }
 
   // 2. Render Live Search Results Screen (Blood Banks & 1-min WhatsApp Donor Simulation)
   if (currentView === "search-results" && activeSearchCase) {
     return (
-      <SearchBloodResults
-        request={activeSearchCase}
-        userCoords={userCoords}
-        userCity={userDetectedCity}
-        onBack={() => setCurrentView("search-blood")}
-        onDone={() => {
-          if (user) {
-            setCurrentView("dashboard")
-          } else {
-            setCurrentView("landing")
-          }
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
-      />
+      <>
+        <SearchBloodResults
+          request={activeSearchCase}
+          userCoords={userCoords}
+          userCity={userDetectedCity}
+          onBack={() => setCurrentView("search-blood")}
+          onDone={() => {
+            if (user) {
+              setCurrentView("dashboard")
+            } else {
+              setCurrentView("landing")
+            }
+            window.scrollTo({ top: 0, behavior: "smooth" })
+          }}
+        />
+        <BloodBridgeChatbot />
+      </>
     )
   }
 
   // 3. Render Auth Page when selected
   if (currentView === "auth") {
     return (
-      <AuthPage
-        initialMode={authMode}
-        onBack={() => setCurrentView("landing")}
-        onAuthSuccess={(userData) => {
-          setUser(userData)
-          setCurrentView("dashboard")
-          window.scrollTo({ top: 0, behavior: "smooth" })
-        }}
-      />
+      <>
+        <AuthPage
+          initialMode={authMode}
+          onBack={() => setCurrentView("landing")}
+          onAuthSuccess={(userData) => {
+            setUser(userData)
+            setCurrentView("dashboard")
+            window.scrollTo({ top: 0, behavior: "smooth" })
+          }}
+        />
+        <BloodBridgeChatbot />
+      </>
     )
   }
 
@@ -255,6 +311,8 @@ export default function App() {
           isOpen={isCoordinateOpen}
           onClose={() => setIsCoordinateOpen(false)}
         />
+
+        <BloodBridgeChatbot />
       </>
     )
   }
@@ -393,6 +451,9 @@ export default function App() {
           Register as Donor
         </Button>
       </div>
+
+      {/* AI Assistant Chatbot */}
+      <BloodBridgeChatbot />
     </div>
   )
 }

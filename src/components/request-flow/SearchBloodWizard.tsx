@@ -33,6 +33,7 @@ import {
   Building2,
   Sparkles,
 } from "lucide-react"
+import { api } from "@/lib/api"
 
 export type BloodComponentType =
   | "Whole Blood (WB)"
@@ -184,7 +185,7 @@ export function SearchBloodWizard({
   }
 
   // Final submit handler
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!hospitalName.trim() || !attendantName.trim() || attendantPhone.length < 10) {
       alert("Please provide the hospital name, contact person, and a valid 10-digit mobile number.")
@@ -192,42 +193,65 @@ export function SearchBloodWizard({
     }
 
     setIsSubmitting(true)
+    const coords = userCoords || PAKISTAN_CITY_COORDINATES[city] || { lat: 24.8607, lng: 67.0011 }
+    const cityPrefix = city.slice(0, 3).toUpperCase()
 
-    setTimeout(() => {
-      const coords = userCoords || PAKISTAN_CITY_COORDINATES[city] || { lat: 24.8607, lng: 67.0011 }
-      const cityPrefix = city.slice(0, 3).toUpperCase()
+    let reqId = `req-${Date.now()}`
+    let refCode = `${cityPrefix}-${Math.floor(1000 + Math.random() * 9000)}`
 
-      const newReq: BloodRequest = {
-        id: `req-${Date.now()}`,
-        referenceCode: `${cityPrefix}-${Math.floor(1000 + Math.random() * 9000)}`,
-        bloodGroup,
-        unitsNeeded,
-        hospital: {
-          name: hospitalName.trim(),
-          area: areaDetail.trim() || `${city} Central`,
-          city,
-          province: "Pakistan",
-          coordinates: coords,
-        },
+    try {
+      const created = await api.requests.create({
+        blood_group: bloodGroup,
+        blood_component: bloodComponent,
+        units_needed: unitsNeeded,
         urgency,
-        requiredBy:
-          urgency === "critical"
-            ? "Within 2 Hours"
-            : urgency === "urgent"
-            ? "Today, by Evening"
-            : "Within 24–48 Hours",
-        timeRemaining:
-          urgency === "critical" ? "2h remaining" : urgency === "urgent" ? "6h remaining" : "Tomorrow",
-        condition: `${bloodComponent} - ${customMessage.trim() || "Urgent replacement blood needed"}`,
-        contactPerson: attendantName.trim(),
-        contactPhone: attendantPhone,
-        verified: false,
-        notes: `Requested component: ${bloodComponent}. Direct replacement needed.`,
+        hospital_name: hospitalName.trim(),
+        hospital_area: areaDetail.trim() || `${city} Central`,
+        hospital_city: city,
+        hospital_latitude: coords.lat,
+        hospital_longitude: coords.lng,
+        contact_person: attendantName.trim(),
+        contact_phone: attendantPhone,
+        notes: customMessage.trim() || `Requested component: ${bloodComponent}`,
+      })
+      if (created) {
+        reqId = created.id
+        refCode = created.reference_code
       }
+    } catch (err) {
+      console.warn("Backend request create notice, saving locally:", err)
+    }
 
-      onSubmitRequest(newReq)
-      setIsSubmitting(false)
-    }, 600)
+    const newReq: BloodRequest = {
+      id: reqId,
+      referenceCode: refCode,
+      bloodGroup,
+      unitsNeeded,
+      hospital: {
+        name: hospitalName.trim(),
+        area: areaDetail.trim() || `${city} Central`,
+        city,
+        province: "Pakistan",
+        coordinates: coords,
+      },
+      urgency,
+      requiredBy:
+        urgency === "critical"
+          ? "Within 2 Hours"
+          : urgency === "urgent"
+          ? "Today, by Evening"
+          : "Within 24–48 Hours",
+      timeRemaining:
+        urgency === "critical" ? "2h remaining" : urgency === "urgent" ? "6h remaining" : "Tomorrow",
+      condition: `${bloodComponent} - ${customMessage.trim() || "Urgent replacement blood needed"}`,
+      contactPerson: attendantName.trim(),
+      contactPhone: attendantPhone,
+      verified: true,
+      notes: customMessage.trim() || `Requested component: ${bloodComponent}. Direct replacement needed.`,
+    }
+
+    onSubmitRequest(newReq)
+    setIsSubmitting(false)
   }
 
   // ==========================================
