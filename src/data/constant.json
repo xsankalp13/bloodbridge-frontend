@@ -1,0 +1,212 @@
+[
+  {
+    "id": "case-khi-1",
+    "referenceCode": "KHI-9104",
+    "bloodGroup": "O-",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Jinnah Postgraduate Medical Centre (JPMC)",
+      "area": "Rafiqui Sarwar Shaheed Road, Cantt",
+      "city": "Karachi",
+      "province": "Sindh",
+      "coordinates": { "lat": 24.8532, "lng": 67.0457 }
+    },
+    "urgency": "critical",
+    "requiredBy": "Within 1 Hour",
+    "timeRemaining": "45m left",
+    "condition": "Severe accident trauma casualty in Emergency Resuscitation",
+    "contactPerson": "Dr. Arshad (Emergency Trauma Registrar)",
+    "contactPhone": "3002819402",
+    "verified": true,
+    "notes": "Emergency O- negative units required immediately. Replacement donors prioritized."
+  },
+  {
+    "id": "case-lhr-1",
+    "referenceCode": "LHR-8302",
+    "bloodGroup": "B+",
+    "unitsNeeded": 3,
+    "hospital": {
+      "name": "Mayo Hospital",
+      "area": "Anarkali, Nila Gumbad",
+      "city": "Lahore",
+      "province": "Punjab",
+      "coordinates": { "lat": 31.5746, "lng": 74.3134 }
+    },
+    "urgency": "critical",
+    "requiredBy": "Today, by 3:00 PM",
+    "timeRemaining": "2h 15m left",
+    "condition": "Pediatric Thalassemia major blood exchange transfusion",
+    "contactPerson": "Zubair Hashmi (Family Attendant)",
+    "contactPhone": "3214589120",
+    "verified": true,
+    "notes": "Child admitted in Pediatric Ward 4. Cross-match report already verified."
+  },
+  {
+    "id": "case-isb-1",
+    "referenceCode": "ISB-7721",
+    "bloodGroup": "A+",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Pakistan Institute of Medical Sciences (PIMS)",
+      "area": "Sector G-8/3",
+      "city": "Islamabad",
+      "province": "Islamabad Capital Territory",
+      "coordinates": { "lat": 33.7058, "lng": 73.0568 }
+    },
+    "urgency": "urgent",
+    "requiredBy": "Tonight, 8:00 PM",
+    "timeRemaining": "5h left",
+    "condition": "Post-cardiac bypass surgery recovery support",
+    "contactPerson": "Dr. Kamran Qureshi",
+    "contactPhone": "3335129408",
+    "verified": true,
+    "notes": "Replacement donor needed for ICU recovery."
+  },
+  {
+    "id": "case-hyd-1",
+    "referenceCode": "HYD-8421",
+    "bloodGroup": "O-",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Liaquat University Hospital (Civil LUH)",
+      "area": "Civil Hospital Road, Latifabad Unit 4",
+      "city": "Hyderabad",
+      "province": "Sindh",
+      "coordinates": { "lat": 25.3960, "lng": 68.3578 }
+    },
+    "urgency": "critical",
+    "requiredBy": "Within 2 Hours",
+    "timeRemaining": "1h 15m left",
+    "condition": "Emergency obstetric OT intervention",
+    "contactPerson": "Sister Parveen (Labor Room Incharge)",
+    "contactPhone": "3013829104",
+    "verified": true,
+    "notes": "Universal donor O- required for immediate surgical stabilization."
+  },
+  {
+    "id": "case-pes-1",
+    "referenceCode": "PES-6140",
+    "bloodGroup": "AB+",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Lady Reading Hospital (LRH)",
+      "area": "Soekarno Square, GT Road",
+      "city": "Peshawar",
+      "province": "Khyber Pakhtunkhwa",
+      "coordinates": { "lat": 34.0094, "lng": 71.5732 }
+    },
+    "urgency": "urgent",
+    "requiredBy": "Today, 6:00 PM",
+    "timeRemaining": "4h left",
+    "condition": "Complex burn trauma and plasma replacement",
+    "contactPerson": "Hamza Khan (Attendant)",
+    "contactPhone": "3459182304",
+    "verified": true,
+    "notes": "Cross-match screening open at LRH Blood Transfusion Center."
+  },
+  {
+    "id": "case-qta-1",
+    "referenceCode": "QTA-5519",
+    "bloodGroup": "O+",
+    "unitsNeeded": 3,
+    "hospital": {
+      "name": "Bolan Medical Complex Hospital (BMC)",
+      "area": "Brewery Road",
+      "city": "Quetta",
+      "province": "Balochistan",
+      "coordinates": { "lat": 30.1983, "lng": 66.9744 }
+    },
+    "urgency": "critical",
+    "requiredBy": "Immediate",
+    "timeRemaining": "1h 45m left",
+    "condition": "Highway trauma victims triage support",
+    "contactPerson": "Dr. Jan Baloch (Medical Officer)",
+    "contactPhone": "3327891245",
+    "verified": true,
+    "notes": "Emergency OT standby. Multiple replacement units requested."
+  },
+  {
+    "id": "case-fsd-1",
+    "referenceCode": "FSD-4290",
+    "bloodGroup": "B-",
+    "unitsNeeded": 1,
+    "hospital": {
+      "name": "Allied Hospital Faisalabad",
+      "area": "Jail Road, Civil Lines",
+      "city": "Faisalabad",
+      "province": "Punjab",
+      "coordinates": { "lat": 31.4278, "lng": 73.0758 }
+    },
+    "urgency": "critical",
+    "requiredBy": "Today, 5:00 PM",
+    "timeRemaining": "3h left",
+    "condition": "Rare negative blood group surgery replacement",
+    "contactPerson": "Nadeem Akhtar (Attendant)",
+    "contactPhone": "3045618923",
+    "verified": false,
+    "notes": "B-Negative blood unit needed. Family present near Allied blood bank."
+  },
+  {
+    "id": "case-mul-1",
+    "referenceCode": "MUL-3812",
+    "bloodGroup": "A-",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Nishtar Hospital Multan",
+      "area": "Nishtar Road, Cantt",
+      "city": "Multan",
+      "province": "Punjab",
+      "coordinates": { "lat": 30.2014, "lng": 71.4552 }
+    },
+    "urgency": "urgent",
+    "requiredBy": "Tonight, 9:00 PM",
+    "timeRemaining": "6h left",
+    "condition": "Oncology chemotherapy transfusion support",
+    "contactPerson": "Farooq Gillani",
+    "contactPhone": "3028471920",
+    "verified": true,
+    "notes": "Hematology ward bed 18. Pre-screened blood replacement requested."
+  },
+  {
+    "id": "case-rwp-1",
+    "referenceCode": "RWP-7023",
+    "bloodGroup": "O+",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "Holy Family Hospital",
+      "area": "Satellite Town",
+      "city": "Rawalpindi",
+      "province": "Punjab",
+      "coordinates": { "lat": 33.6339, "lng": 73.0645 }
+    },
+    "urgency": "routine",
+    "requiredBy": "Tomorrow, 10:00 AM",
+    "timeRemaining": "17h left",
+    "condition": "Scheduled spinal stabilization surgery",
+    "contactPerson": "Usman Malik (Brother)",
+    "contactPhone": "3349021873",
+    "verified": true,
+    "notes": "Elective surgery arrangement. Replacement donors welcomed in advance."
+  },
+  {
+    "id": "case-khi-2",
+    "referenceCode": "KHI-9133",
+    "bloodGroup": "B+",
+    "unitsNeeded": 2,
+    "hospital": {
+      "name": "The Indus Hospital",
+      "area": "Korangi Crossing",
+      "city": "Karachi",
+      "province": "Sindh",
+      "coordinates": { "lat": 24.8239, "lng": 67.1264 }
+    },
+    "urgency": "urgent",
+    "requiredBy": "Today, 7:00 PM",
+    "timeRemaining": "4h 30m left",
+    "condition": "Pediatric hematology support",
+    "contactPerson": "Asif Raza (Coordinator)",
+    "contactPhone": "3139820194",
+    "verified": true,
+    "notes": "Indus Blood Center voluntary cross-match ready."
+  }
+]
